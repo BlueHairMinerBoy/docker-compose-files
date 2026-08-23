@@ -46,12 +46,6 @@ services:
       POLICY_FNAME: "/data/cfg/botPolicy.yaml"
     volumes:
       - /srv/docker/anubis/botPolicy.yaml:/data/cfg/botPolicy.yaml
-    labels:
-      - pangolin.proxy-resources.jellyfin.name=Jellyfin
-      - pangolin.proxy-resources.jellyfin.full-domain=play.beans.is
-      - pangolin.proxy-resources.jellyfin.protocol=http
-      - pangolin.proxy-resources.jellyfin.targets[0].port=8081
-      - pangolin.proxy-resources.jellyfin.targets[0].method=http
 
   sabnzbd:
     <<: *common
@@ -62,12 +56,6 @@ services:
     volumes:
       - /srv/docker/sabnzbd/config:/config
       - /mnt/drive/:/drive
-    labels:
-      - pangolin.proxy-resources.sabnzbd.name=SABnzbd
-      - pangolin.proxy-resources.sabnzbd.full-domain=sabnzbd.ipn.netherspark.net
-      - pangolin.proxy-resources.sabnzbd.protocol=http
-      - pangolin.proxy-resources.sabnzbd.targets[0].port=8080
-      - pangolin.proxy-resources.sabnzbd.targets[0].method=http
 
   sonarr:
     <<: *common
@@ -78,12 +66,6 @@ services:
     volumes:
       - /srv/docker/sonarr/config:/config
       - /mnt/drive/:/drive
-    labels:
-      - pangolin.proxy-resources.sonarr.name=Sonarr
-      - pangolin.proxy-resources.sonarr.full-domain=sonarr.ipn.netherspark.net
-      - pangolin.proxy-resources.sonarr.protocol=http
-      - pangolin.proxy-resources.sonarr.targets[0].port=8989
-      - pangolin.proxy-resources.sonarr.targets[0].method=http
 
   radarr:
     <<: *common
@@ -94,12 +76,6 @@ services:
     volumes:
       - /srv/docker/radarr/config:/config
       - /mnt/drive/:/drive
-    labels:
-      - pangolin.proxy-resources.radarr.name=Radarr
-      - pangolin.proxy-resources.radarr.full-domain=radarr.ipn.netherspark.net
-      - pangolin.proxy-resources.radarr.protocol=http
-      - pangolin.proxy-resources.radarr.targets[0].port=7878
-      - pangolin.proxy-resources.radarr.targets[0].method=http
 
   bazarr:
     <<: *common
@@ -110,12 +86,6 @@ services:
     volumes:
       - /srv/docker/bazarr/config:/config
       - /mnt/drive/:/drive
-    labels:
-      - pangolin.proxy-resources.bazarr.name=Bazarr
-      - pangolin.proxy-resources.bazarr.full-domain=bazarr.ipn.netherspark.net
-      - pangolin.proxy-resources.bazarr.protocol=http
-      - pangolin.proxy-resources.bazarr.targets[0].port=6767
-      - pangolin.proxy-resources.bazarr.targets[0].method=http
 
   jfa-go:
     <<: *common
@@ -124,12 +94,6 @@ services:
     volumes:
       - /srv/docker/jellyfin/:/jf
       - /srv/docker/jfa-go/data:/data
-    labels:
-      - pangolin.proxy-resources.jfa-go.name=JFA-Go
-      - pangolin.proxy-resources.jfa-go.full-domain=invites.play.beans.is
-      - pangolin.proxy-resources.jfa-go.protocol=http
-      - pangolin.proxy-resources.jfa-go.targets[0].port=8056
-      - pangolin.proxy-resources.jfa-go.targets[0].method=http
 
   seerr:
     <<: *common
@@ -146,12 +110,6 @@ services:
       retries: 3
     volumes:
       - /srv/docker/seerr/config:/app/config
-    labels:
-      - pangolin.proxy-resources.seerr.name=Seerr
-      - pangolin.proxy-resources.seerr.full-domain=request.play.beans.is
-      - pangolin.proxy-resources.seerr.protocol=http
-      - pangolin.proxy-resources.seerr.targets[0].port=5055
-      - pangolin.proxy-resources.seerr.targets[0].method=http
   maintainerr:
     <<: *common
     image: ghcr.io/maintainerr/maintainerr:latest
@@ -160,9 +118,3 @@ services:
       <<: *common-env
     volumes:
       - /srv/docker/maintainerr/data:/opt/data
-    labels:
-      - pangolin.proxy-resources.maintainerr.name=Maintainerr
-      - pangolin.proxy-resources.maintainerr.full-domain=maintainerr.ipn.netherspark.net
-      - pangolin.proxy-resources.maintainerr.protocol=http
-      - pangolin.proxy-resources.maintainerr.targets[0].port=6246
-      - pangolin.proxy-resources.maintainerr.targets[0].method=http

@@ -15,9 +15,3 @@ services:
     restart: unless-stopped
     volumes:
       - /srv/docker/dispatcharr/config:/data
-    labels:
-      - pangolin.proxy-resources.dispatcharr.name=Dispatcharr
-      - pangolin.proxy-resources.dispatcharr.full-domain=hdhr.beans.is
-      - pangolin.proxy-resources.dispatcharr.protocol=http
-      - pangolin.proxy-resources.dispatcharr.targets[0].port=9191
-      - pangolin.proxy-resources.dispatcharr.targets[0].method=http
