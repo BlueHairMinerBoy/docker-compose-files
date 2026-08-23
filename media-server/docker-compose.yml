@@ -1,0 +1,193 @@
+x-common-env: &common-env
+  PUID: 995
+  PGID: 1001
+  TZ: Europe/London
+
+x-common: &common
+  restart: unless-stopped
+
+services:
+  newt:
+    image: fosrl/newt:latest
+    container_name: newt-media
+    restart: unless-stopped
+    environment:
+      PANGOLIN_ENDPOINT: https://CHANGEME.example.com  # Your Pangolin server URL
+      NEWT_ID: CHANGEME
+      NEWT_SECRET: CHANGEME
+      DOCKER_SOCKET: /var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  jellyfin:
+    <<: *common
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    volumes:
+      - /srv/docker/jellyfin/web-config.json:/jellyfin/jellyfin-web/config.json
+      - /srv/docker/jellyfin/config:/config
+      - /srv/docker/jellyfin/cache:/cache
+      - /mnt/drive/:/drive
+    environment:
+      JELLYFIN_PublishedServerUrl: https://play.beans.is
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/card0:/dev/dri/card0
+
+  anubis:
+    <<: *common
+    image: ghcr.io/techarohq/anubis:latest
+    container_name: anubis
+    environment:
+      BIND: ":8081"
+      COOKIE_DOMAIN: "play.beans.is"
+      TARGET: "http://jellyfin:8096"
+      OG_PASSTHROUGH: "true"
+      OG_EXPIRY_TIME: "1h"
+      OG_CACHE_CONSIDER_HOST: "true"
+      POLICY_FNAME: "/data/cfg/botPolicy.yaml"
+    volumes:
+      - /srv/docker/anubis/botPolicy.yaml:/data/cfg/botPolicy.yaml
+    labels:
+      - pangolin.proxy-resources.jellyfin.name=Jellyfin
+      - pangolin.proxy-resources.jellyfin.full-domain=play.beans.is
+      - pangolin.proxy-resources.jellyfin.protocol=http
+      - pangolin.proxy-resources.jellyfin.targets[0].port=8081
+      - pangolin.proxy-resources.jellyfin.targets[0].method=http
+
+  sabnzbd:
+    <<: *common
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    environment:
+      <<: *common-env
+    volumes:
+      - /srv/docker/sabnzbd/config:/config
+      - /mnt/drive/:/drive
+    labels:
+      - pangolin.proxy-resources.sabnzbd.name=SABnzbd
+      - pangolin.proxy-resources.sabnzbd.full-domain=sabnzbd.ipn.netherspark.net
+      - pangolin.proxy-resources.sabnzbd.protocol=http
+      - pangolin.proxy-resources.sabnzbd.targets[0].port=8080
+      - pangolin.proxy-resources.sabnzbd.targets[0].method=http
+
+  sonarr:
+    <<: *common
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      <<: *common-env
+    volumes:
+      - /srv/docker/sonarr/config:/config
+      - /mnt/drive/:/drive
+    labels:
+      - pangolin.proxy-resources.sonarr.name=Sonarr
+      - pangolin.proxy-resources.sonarr.full-domain=sonarr.ipn.netherspark.net
+      - pangolin.proxy-resources.sonarr.protocol=http
+      - pangolin.proxy-resources.sonarr.targets[0].port=8989
+      - pangolin.proxy-resources.sonarr.targets[0].method=http
+
+  radarr:
+    <<: *common
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      <<: *common-env
+    volumes:
+      - /srv/docker/radarr/config:/config
+      - /mnt/drive/:/drive
+    labels:
+      - pangolin.proxy-resources.radarr.name=Radarr
+      - pangolin.proxy-resources.radarr.full-domain=radarr.ipn.netherspark.net
+      - pangolin.proxy-resources.radarr.protocol=http
+      - pangolin.proxy-resources.radarr.targets[0].port=7878
+      - pangolin.proxy-resources.radarr.targets[0].method=http
+
+  bazarr:
+    <<: *common
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      <<: *common-env
+    volumes:
+      - /srv/docker/bazarr/config:/config
+      - /mnt/drive/:/drive
+    labels:
+      - pangolin.proxy-resources.bazarr.name=Bazarr
+      - pangolin.proxy-resources.bazarr.full-domain=bazarr.ipn.netherspark.net
+      - pangolin.proxy-resources.bazarr.protocol=http
+      - pangolin.proxy-resources.bazarr.targets[0].port=6767
+      - pangolin.proxy-resources.bazarr.targets[0].method=http
+
+  jfa-go:
+    <<: *common
+    image: hrfee/jfa-go
+    container_name: jfa-go
+    volumes:
+      - /srv/docker/jellyfin/:/jf
+      - /srv/docker/jfa-go/data:/data
+    labels:
+      - pangolin.proxy-resources.jfa-go.name=JFA-Go
+      - pangolin.proxy-resources.jfa-go.full-domain=invites.play.beans.is
+      - pangolin.proxy-resources.jfa-go.protocol=http
+      - pangolin.proxy-resources.jfa-go.targets[0].port=8056
+      - pangolin.proxy-resources.jfa-go.targets[0].method=http
+
+  seerr:
+    <<: *common
+    image: ghcr.io/seerr-team/seerr:latest
+    init: true
+    container_name: seerr
+    environment:
+      TZ: Europe/London
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    volumes:
+      - /srv/docker/seerr/config:/app/config
+    labels:
+      - pangolin.proxy-resources.seerr.name=Seerr
+      - pangolin.proxy-resources.seerr.full-domain=request.play.beans.is
+      - pangolin.proxy-resources.seerr.protocol=http
+      - pangolin.proxy-resources.seerr.targets[0].port=5055
+      - pangolin.proxy-resources.seerr.targets[0].method=http
+
+  requestrr:
+    <<: *common
+    image: thomst08/requestrr
+    container_name: requestrr
+    volumes:
+      - /srv/docker/requestrr/config:/root/config
+    labels:
+      - pangolin.proxy-resources.requestrr.name=Requestrr
+      - pangolin.proxy-resources.requestrr.full-domain=requestrr.ipn.netherspark.net
+      - pangolin.proxy-resources.requestrr.protocol=http
+      - pangolin.proxy-resources.requestrr.targets[0].port=4545
+      - pangolin.proxy-resources.requestrr.targets[0].method=http
+
+  maintainerr:
+    <<: *common
+    image: ghcr.io/maintainerr/maintainerr:latest
+    container_name: maintainerr
+    environment:
+      <<: *common-env
+    volumes:
+      - /srv/docker/maintainerr/data:/opt/data
+    labels:
+      - pangolin.proxy-resources.maintainerr.name=Maintainerr
+      - pangolin.proxy-resources.maintainerr.full-domain=maintainerr.ipn.netherspark.net
+      - pangolin.proxy-resources.maintainerr.protocol=http
+      - pangolin.proxy-resources.maintainerr.targets[0].port=6246
+      - pangolin.proxy-resources.maintainerr.targets[0].method=http
+
+  samsung-tvplus:
+    <<: *common
+    image: matthuisman/samsung-tvplus-for-channels
+    container_name: samsung-tvplus
+    environment:
+      REGIONS: gb
+      TZ: Europe/London
+      PORT: 80
