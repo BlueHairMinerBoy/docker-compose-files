@@ -5,7 +5,7 @@ services:
     container_name: pangolin
     restart: unless-stopped
     volumes:
-      - /srv/docker/pangolinconfig:/app/config
+      - /srv/docker/pangolin/config:/app/config
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/api/v1/"]
       interval: "10s"
@@ -24,7 +24,7 @@ services:
       - --generateAndSaveKeyTo=/var/config/key
       - --remoteConfig=http://pangolin:3001/api/v1/
     volumes:
-      - /srv/docker/pangolinconfig/:/var/config
+      - /srv/docker/pangolin/config/:/var/config
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
@@ -46,9 +46,9 @@ services:
     command:
       - --configFile=/etc/traefik/traefik_config.yml
     volumes:
-      - /srv/docker/pangolinconfig/traefik:/etc/traefik:ro
-      - /srv/docker/pangolinconfig/letsencrypt:/letsencrypt
-      - /srv/docker/pangolinconfig/traefik/logs:/var/log/traefik
+      - /srv/docker/pangolin/config/traefik:/etc/traefik:ro
+      - /srv/docker/pangolin/config/letsencrypt:/letsencrypt
+      - /srv/docker/pangolin/config/traefik/logs:/var/log/traefik
 
 networks:
   default:
