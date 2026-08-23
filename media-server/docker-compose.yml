@@ -31,7 +31,7 @@ services:
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
       - /dev/dri/card0:/dev/dri/card0
-      
+
   sabnzbd:
     <<: *common
     image: lscr.io/linuxserver/sabnzbd:latest
@@ -95,11 +95,3 @@ services:
       retries: 3
     volumes:
       - /srv/docker/seerr/config:/app/config
-  maintainerr:
-    <<: *common
-    image: ghcr.io/maintainerr/maintainerr:latest
-    container_name: maintainerr
-    environment:
-      <<: *common-env
-    volumes:
-      - /srv/docker/maintainerr/data:/opt/data
