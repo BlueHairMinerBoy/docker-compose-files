@@ -31,22 +31,7 @@ services:
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
       - /dev/dri/card0:/dev/dri/card0
-
-  anubis:
-    <<: *common
-    image: ghcr.io/techarohq/anubis:latest
-    container_name: anubis
-    environment:
-      BIND: ":8081"
-      COOKIE_DOMAIN: "play.beans.is"
-      TARGET: "http://jellyfin:8096"
-      OG_PASSTHROUGH: "true"
-      OG_EXPIRY_TIME: "1h"
-      OG_CACHE_CONSIDER_HOST: "true"
-      POLICY_FNAME: "/data/cfg/botPolicy.yaml"
-    volumes:
-      - /srv/docker/anubis/botPolicy.yaml:/data/cfg/botPolicy.yaml
-
+      
   sabnzbd:
     <<: *common
     image: lscr.io/linuxserver/sabnzbd:latest
