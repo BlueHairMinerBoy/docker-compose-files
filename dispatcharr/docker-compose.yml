@@ -13,32 +13,23 @@ services:
     image: ghcr.io/dispatcharr/dispatcharr:latest
     container_name: dispatcharr
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:9191:9191"
     volumes:
       - /srv/docker/dispatcharr/config:/data
     labels:
       - pangolin.proxy-resources.dispatcharr.name=Dispatcharr
-      - pangolin.proxy-resources.dispatcharr.full-domain=dispatcharr.ipn.netherspark.net
+      - pangolin.proxy-resources.dispatcharr.full-domain=hdhr.beans.is
       - pangolin.proxy-resources.dispatcharr.protocol=http
       - pangolin.proxy-resources.dispatcharr.targets[0].port=9191
       - pangolin.proxy-resources.dispatcharr.targets[0].method=http
-      - pangolin.proxy-resources.hdhr.name=HDHR
-      - pangolin.proxy-resources.hdhr.full-domain=hdhr.beans.is
-      - pangolin.proxy-resources.hdhr.protocol=http
-      - pangolin.proxy-resources.hdhr.targets[0].port=9191
-      - pangolin.proxy-resources.hdhr.targets[0].method=http
 
   dispatcharr-home:
     image: ghcr.io/dispatcharr/dispatcharr:latest
     container_name: dispatcharr-home
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:9292:9191"
     volumes:
       - /srv/docker/dispatcharr-home/config:/data
     labels:
-      - pangolin.proxy-resources.hdhr-home.name=HDHR Home
+      - pangolin.proxy-resources.hdhr-home.name=Dispatcharr Home
       - pangolin.proxy-resources.hdhr-home.full-domain=hdhr-home.beans.is
       - pangolin.proxy-resources.hdhr-home.protocol=http
       - pangolin.proxy-resources.hdhr-home.targets[0].port=9191
