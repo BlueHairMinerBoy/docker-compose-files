@@ -11,10 +11,8 @@ services:
     image: fosrl/newt:latest
     container_name: newt-media
     restart: unless-stopped
+    env_file: .env
     environment:
-      PANGOLIN_ENDPOINT: https://CHANGEME.example.com  # Your Pangolin server URL
-      NEWT_ID: CHANGEME
-      NEWT_SECRET: CHANGEME
       DOCKER_SOCKET: /var/run/docker.sock
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

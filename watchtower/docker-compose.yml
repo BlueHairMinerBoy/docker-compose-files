@@ -7,7 +7,6 @@ services:
       TZ: Europe/London
       WATCHTOWER_CLEANUP: true           # Remove old images after updating
       WATCHTOWER_SCHEDULE: "0 0 4 * * *" # 4am daily (cron with seconds)
-      WATCHTOWER_LABEL_ENABLE: true      # Only update containers with the opt-in label
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
