@@ -152,20 +152,6 @@ services:
       - pangolin.proxy-resources.seerr.protocol=http
       - pangolin.proxy-resources.seerr.targets[0].port=5055
       - pangolin.proxy-resources.seerr.targets[0].method=http
-
-  requestrr:
-    <<: *common
-    image: thomst08/requestrr
-    container_name: requestrr
-    volumes:
-      - /srv/docker/requestrr/config:/root/config
-    labels:
-      - pangolin.proxy-resources.requestrr.name=Requestrr
-      - pangolin.proxy-resources.requestrr.full-domain=requestrr.ipn.netherspark.net
-      - pangolin.proxy-resources.requestrr.protocol=http
-      - pangolin.proxy-resources.requestrr.targets[0].port=4545
-      - pangolin.proxy-resources.requestrr.targets[0].method=http
-
   maintainerr:
     <<: *common
     image: ghcr.io/maintainerr/maintainerr:latest
@@ -180,12 +166,3 @@ services:
       - pangolin.proxy-resources.maintainerr.protocol=http
       - pangolin.proxy-resources.maintainerr.targets[0].port=6246
       - pangolin.proxy-resources.maintainerr.targets[0].method=http
-
-  samsung-tvplus:
-    <<: *common
-    image: matthuisman/samsung-tvplus-for-channels
-    container_name: samsung-tvplus
-    environment:
-      REGIONS: gb
-      TZ: Europe/London
-      PORT: 80
