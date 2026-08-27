@@ -10,9 +10,9 @@ services:
       - "443:443"
       - "443:443/udp"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./data:/data
-      - ./config:/config
+      - /srv/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /srv/docker/caddy/data:/data
+      - /srv/docker/caddy/config:/config
 
 networks:
   default:
