@@ -8,15 +8,7 @@ services:
     volumes:
       - /srv/docker/dispatcharr/config:/data
 
-  dispatcharr-home:
-    image: ghcr.io/dispatcharr/dispatcharr:latest
-    container_name: dispatcharr-home
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:9292:9191"
-    volumes:
-      - /srv/docker/dispatcharr-home/config:/data
-
+    
 networks:
   default:
     name: proxy
