@@ -67,6 +67,12 @@ hdhr.beans.is {
 	import tls_cf
 	import base_config
 
+	@blocked {
+		not client_ip 100.64.0.0/10
+		not path /player_api.php /get.php /xmltv.php /live/* /movie/* /series/* /api/channels/logos/*
+	}
+	respond @blocked "Access denied" 403
+
 	@logo_cache path /api/channels/logos/*/cache
 	rewrite @logo_cache {path}/
 
