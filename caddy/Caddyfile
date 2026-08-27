@@ -87,24 +87,30 @@ netctl.ipn.netherspark.net {
 	}
 }
 
+(anubis_proxy) {
+	reverse_proxy anubis:8081 {
+		header_up X-Real-IP {remote_host}
+	}
+}
+
 # --- Step 1: Send public sites to Anubis ---
 
 play.beans.is {
 	import logger "jellyfin"
 	import public
-	reverse_proxy anubis:8081
+	import anubis_proxy
 }
 
 invites.play.beans.is {
 	import logger wizarr
 	import public
-	reverse_proxy anubis:8081
+	import anubis_proxy
 }
 
 request.play.beans.is {
 	import logger seer
 	import public
-	reverse_proxy anubis:8081
+	import anubis_proxy
 }
 
 # --- Step 2: Receive validated traffic from Anubis ---
