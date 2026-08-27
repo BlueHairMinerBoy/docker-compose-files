@@ -1,17 +1,23 @@
 services:
-  newt:
-    image: fosrl/newt:latest
-    container_name: newt-dispatcharr
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      DOCKER_SOCKET: /var/run/docker.sock
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
   dispatcharr:
     image: ghcr.io/dispatcharr/dispatcharr:latest
     container_name: dispatcharr
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:9191:9191"
     volumes:
       - /srv/docker/dispatcharr/config:/data
+
+  dispatcharr-home:
+    image: ghcr.io/dispatcharr/dispatcharr:latest
+    container_name: dispatcharr-home
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9292:9191"
+    volumes:
+      - /srv/docker/dispatcharr-home/config:/data
+
+networks:
+  default:
+    name: proxy
+    external: true

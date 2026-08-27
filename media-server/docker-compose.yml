@@ -7,16 +7,6 @@ x-common: &common
   restart: unless-stopped
 
 services:
-  newt:
-    image: fosrl/newt:latest
-    container_name: newt-media
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      DOCKER_SOCKET: /var/run/docker.sock
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
   jellyfin:
     <<: *common
     image: jellyfin/jellyfin:latest
@@ -31,6 +21,19 @@ services:
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
       - /dev/dri/card0:/dev/dri/card0
+
+  anubis:
+    <<: *common
+    image: ghcr.io/techarohq/anubis:latest
+    container_name: anubis
+    environment:
+      BIND: ":8081"
+      COOKIE_DOMAIN: ".play.beans.is"
+      TARGET: "http://caddy:8082"
+      OG_CACHE_CONSIDER_HOST: "true"
+      POLICY_FNAME: "/data/cfg/botPolicy.yaml"
+    volumes:
+      - /srv/docker/anubis/botPolicy.yaml:/data/cfg/botPolicy.yaml
 
   sabnzbd:
     <<: *common
@@ -72,13 +75,21 @@ services:
       - /srv/docker/bazarr/config:/config
       - /mnt/drive/:/drive
 
-  jfa-go:
+  wizarr:
     <<: *common
-    image: hrfee/jfa-go
-    container_name: jfa-go
+    image: ghcr.io/wizarrrr/wizarr:latest
+    container_name: wizarr
+    environment:
+      <<: *common-env
     volumes:
-      - /srv/docker/jellyfin/:/jf
-      - /srv/docker/jfa-go/data:/data
+      - /srv/docker/wizarr/data:/data
+
+  requestrr:
+    <<: *common
+    image: thomst08/requestrr
+    container_name: requestrr
+    volumes:
+      - /srv/docker/requestrr/config:/root/config
 
   seerr:
     <<: *common
@@ -95,3 +106,26 @@ services:
       retries: 3
     volumes:
       - /srv/docker/seerr/config:/app/config
+
+  maintainerr:
+    <<: *common
+    image: ghcr.io/maintainerr/maintainerr:latest
+    container_name: maintainerr
+    environment:
+      <<: *common-env
+    volumes:
+      - /srv/docker/maintainerr/data:/opt/data
+
+  samsung-tvplus:
+    <<: *common
+    image: matthuisman/samsung-tvplus-for-channels
+    container_name: samsung-tvplus
+    environment:
+      REGIONS: gb
+      TZ: Europe/London
+      PORT: 80
+
+networks:
+  default:
+    name: proxy
+    external: true

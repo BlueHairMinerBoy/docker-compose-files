@@ -1,0 +1,159 @@
+(logger) {
+	log {
+		output file /var/log/caddy/{args[0]}-access.log
+		level INFO
+	}
+	log {
+		output file /var/log/caddy/{args[0]}-error.log
+		level ERROR
+	}
+}
+
+(tls_cf) {
+	tls {
+		dns cloudflare {$CLOUDFLARE_API_TOKEN}
+		resolvers 1.1.1.1
+	}
+}
+
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+(tailnet) {
+	bind {$TAILNET_IP} {$TAILNET_IPV6}
+	import tls_cf
+	import security_headers
+}
+
+(public) {
+	bind {$PUBLIC_IP} {$PUBLIC_IPV6}
+	import security_headers
+}
+
+(tailnet_app) {
+	{args[0]}.ipn.netherspark.net {
+		import logger {args[0]}
+		import tailnet
+		reverse_proxy http://{args[1]}
+	}
+}
+
+# --- Tailnet-only services ---
+
+import tailnet_app sonarr sonarr:8989
+import tailnet_app radarr radarr:7878
+import tailnet_app sabnzbd sabnzbd:8080
+import tailnet_app bazarr bazarr:6767
+import tailnet_app requestrr requestrr:4545
+import tailnet_app dispatcharr dispatcharr:9191
+import tailnet_app maintainerr maintainerr:6246
+import tailnet_app twickets twitchets.twitchets_default:9000
+
+netctl.ipn.netherspark.net {
+	import logger "unifi"
+	import tailnet
+	reverse_proxy https://172.18.0.3:8443 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+# --- Step 1: Send public sites to Anubis ---
+
+play.beans.is {
+	import logger "jellyfin"
+	import public
+	reverse_proxy anubis:8081
+}
+
+invites.play.beans.is {
+	import logger wizarr
+	import public
+	reverse_proxy anubis:8081
+}
+
+request.play.beans.is {
+	import logger seer
+	import public
+	reverse_proxy anubis:8081
+}
+
+# --- Step 2: Receive validated traffic from Anubis ---
+
+:8082 {
+	@jellyfin host play.beans.is
+	handle @jellyfin {
+		reverse_proxy jellyfin:8096
+	}
+
+	@wizarr host invites.play.beans.is
+	handle @wizarr {
+		reverse_proxy wizarr:5690
+	}
+
+	@seerr host request.play.beans.is
+	handle @seerr {
+		reverse_proxy seerr:5055
+	}
+}
+
+# --- Other Public sites ---
+
+beans.is {
+	import logger beanssite
+	import public
+	root * /var/www/beans
+	file_server
+}
+
+hdhr.beans.is {
+	bind {$PUBLIC_IP} {$PUBLIC_IPV6} {$TAILNET_IP}
+	import tls_cf
+	import security_headers
+	import logger hdhr
+	reverse_proxy http://dispatcharr:9191
+}
+
+hdhr-home.beans.is {
+	import tls_cf
+	import security_headers
+	@ip-whitelist {
+		not client_ip 46.227.144.0/21 78.143.192.0/19 82.163.144.0/20 82.163.184.0/21 82.163.252.0/22 83.151.200.0/21 88.202.128.0/19 88.202.192.0/20 88.202.232.0/22 88.202.240.0/20 88.212.164.0/22 88.212.168.0/21 88.212.176.0/21 88.212.184.0/22 185.82.156.0/22 185.111.224.0/22 185.147.88.0/22 188.95.40.0/21 194.233.152.0/22 194.233.152.0/21 194.233.156.0/22 194.233.224.0/20 195.180.16.0/20 195.180.32.0/22 195.180.32.0/21 195.180.36.0/22 195.180.48.0/20 212.132.32.0/19 212.237.220.0/22 213.18.128.0/18 216.213.128.0/18
+		not client_ip 77.104.147.155/32 2a02:8012:91cf::/48
+	}
+	respond @ip-whitelist "Go away!"
+
+	bind {$PUBLIC_IP}
+	import logger hdhr
+	reverse_proxy http://dispatcharr-home:9191
+}
+
+stash.orangerubber.dog {
+	tls {
+		dns hetzner {$HETZNER_API_TOKEN}
+		propagation_delay 30s
+	}
+	bind {$TAILNET_IP}
+	import security_headers
+	reverse_proxy http://{$TAILNET_IP}:19999 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-Port {server_port}
+	}
+}
+
+call.beans.is {
+	import logger "jitsi"
+	import public
+	import tls_cf
+	reverse_proxy http://127.0.0.1:8000
+}
