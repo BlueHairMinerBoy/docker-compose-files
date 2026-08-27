@@ -28,13 +28,15 @@
 }
 
 (tailnet) {
-	bind {$TAILNET_IP} {$TAILNET_IPV6}
+	@not_tailnet {
+		not client_ip 100.64.0.0/10
+	}
+	respond @not_tailnet "Access denied" 403
 	import tls_cf
 	import security_headers
 }
 
 (public) {
-	bind {$PUBLIC_IP} {$PUBLIC_IPV6}
 	import security_headers
 }
 
@@ -52,6 +54,20 @@ import tailnet_app sonarr sonarr:8989
 import tailnet_app radarr radarr:7878
 import tailnet_app sabnzbd sabnzbd:8080
 import tailnet_app bazarr bazarr:6767
+import tailnet_app requestrr requestrr:4545
+import tailnet_app dispatcharr dispatcharr:9191
+import tailnet_app maintainerr maintainerr:6246
+import tailnet_app twickets twitchets.twitchets_default:9000
+
+netctl.ipn.netherspark.net {
+	import logger "unifi"
+	import tailnet
+	reverse_proxy https://172.18.0.3:8443 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
 
 # --- Step 1: Send public sites to Anubis ---
 
@@ -95,10 +111,8 @@ request.play.beans.is {
 # --- Other Public sites ---
 
 hdhr.beans.is {
-	bind {$PUBLIC_IP} {$PUBLIC_IPV6} {$TAILNET_IP}
 	import tls_cf
 	import security_headers
 	import logger hdhr
 	reverse_proxy http://dispatcharr:9191
 }
-
