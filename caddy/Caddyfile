@@ -16,7 +16,7 @@
 	}
 }
 
-(security_headers) {
+(base_config) {
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 		X-Content-Type-Options "nosniff"
@@ -25,9 +25,6 @@
 		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
 	}
-}
-
-(error_pages) {
 	handle_errors {
 		root * /var/www/errors
 		rewrite * /{err.status_code}.html
@@ -37,27 +34,30 @@
 	}
 }
 
-(tailnet) {
-	@not_tailnet {
-		not client_ip 100.64.0.0/10
-	}
-	respond @not_tailnet "Access denied" 403
-	import tls_cf
-	import security_headers
-}
-
-(public) {
-	import security_headers
-	import error_pages
-}
-
 (tailnet_app) {
 	{args[0]}.ipn.netherspark.net {
 		import logger {args[0]}
-		import tailnet
-		import error_pages
+		import tls_cf
+		import base_config
+		
+		@not_tailnet {
+			not client_ip 100.64.0.0/10
+		}
+		respond @not_tailnet "Access denied" 403
+		
 		reverse_proxy http://{args[1]} {
 			health_uri {args[2]}
+			health_interval 10s
+		}
+	}
+}
+
+(public_app) {
+	{args[0]} {
+		import logger {args[1]}
+		import base_config
+		reverse_proxy {args[2]} {
+			health_uri {args[3]}
 			health_interval 10s
 		}
 	}
@@ -69,85 +69,17 @@ import tailnet_app sonarr sonarr:8989 /ping
 import tailnet_app radarr radarr:7878 /ping
 import tailnet_app sabnzbd sabnzbd:8080 /
 import tailnet_app bazarr bazarr:6767 /ping
-import tailnet_app requestrr requestrr:4545 /
-import tailnet_app dispatcharr dispatcharr:9191 /
-import tailnet_app maintainerr maintainerr:6246 /
-import tailnet_app twickets twitchets.twitchets_default:9000 /
 
-netctl.ipn.netherspark.net {
-	import logger "unifi"
-	import tailnet
-	import error_pages
-	reverse_proxy https://172.18.0.3:8443 {
-		transport http {
-			tls_insecure_skip_verify
-		}
-		health_uri /
-		health_interval 10s
-	}
-}
+# --- Public sites ---
 
-(anubis_proxy) {
-	reverse_proxy anubis:8081 {
-		header_up X-Real-IP {remote_host}
-	}
-}
-
-# --- Step 1: Send public sites to Anubis ---
-
-play.beans.is {
-	import logger "jellyfin"
-	import public
-	import anubis_proxy
-}
-
-invites.play.beans.is {
-	import logger wizarr
-	import public
-	import anubis_proxy
-}
-
-request.play.beans.is {
-	import logger seer
-	import public
-	import anubis_proxy
-}
-
-# --- Step 2: Receive validated traffic from Anubis ---
-
-:8082 {
-	@jellyfin host play.beans.is
-	handle @jellyfin {
-		reverse_proxy jellyfin:8096 {
-			health_uri /health
-			health_interval 10s
-		}
-	}
-
-	@wizarr host invites.play.beans.is
-	handle @wizarr {
-		reverse_proxy wizarr:5690 {
-			health_uri /
-			health_interval 10s
-		}
-	}
-
-	@seerr host request.play.beans.is
-	handle @seerr {
-		reverse_proxy seerr:5055 {
-			health_uri /api/v1/status
-			health_interval 10s
-		}
-	}
-}
-
-# --- Other Public sites ---
+import public_app play.beans.is jellyfin jellyfin:8096 /health
+import public_app invites.play.beans.is wizarr wizarr:5690 /
+import public_app request.play.beans.is seer seerr:5055 /api/v1/status
 
 hdhr.beans.is {
-	import tls_cf
-	import security_headers
-	import error_pages
 	import logger hdhr
+	import tls_cf
+	import base_config
 	reverse_proxy http://dispatcharr:9191 {
 		health_uri /
 		health_interval 10s
