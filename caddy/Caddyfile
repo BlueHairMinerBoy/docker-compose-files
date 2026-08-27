@@ -43,7 +43,7 @@
 		@not_tailnet {
 			not client_ip 100.64.0.0/10
 		}
-		respond @not_tailnet "Access denied" 403
+		respond @not_tailnet 403
 		
 		reverse_proxy http://{args[1]} {
 			health_uri {args[2]}
@@ -71,7 +71,7 @@ hdhr.beans.is {
 		not client_ip 100.64.0.0/10
 		not path /player_api.php /get.php /xmltv.php /live/* /movie/* /series/* /api/channels/logos/*
 	}
-	respond @blocked "Access denied" 403
+	respond @blocked 403
 
 	@logo_cache path /api/channels/logos/*/cache
 	rewrite @logo_cache {path}/
