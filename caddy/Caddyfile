@@ -66,6 +66,10 @@ hdhr.beans.is {
 	import logger hdhr
 	import tls_cf
 	import base_config
+
+	@logo_cache path /api/channels/logos/*/cache
+	rewrite @logo_cache {path}/
+
 	reverse_proxy http://dispatcharr:9191
 }
 
