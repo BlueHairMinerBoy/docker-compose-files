@@ -52,16 +52,6 @@
 	}
 }
 
-(public_app) {
-	{args[0]} {
-		import logger {args[1]}
-		import base_config
-		reverse_proxy {args[2]} {
-			health_uri {args[3]}
-			health_interval 10s
-		}
-	}
-}
 
 # --- Tailnet-only services ---
 
@@ -72,16 +62,30 @@ import tailnet_app bazarr bazarr:6767 /ping
 
 # --- Public sites ---
 
-import public_app play.beans.is jellyfin jellyfin:8096 /health
-import public_app invites.play.beans.is wizarr wizarr:5690 /
-import public_app request.play.beans.is seer seerr:5055 /api/v1/status
-
 hdhr.beans.is {
 	import logger hdhr
 	import tls_cf
 	import base_config
-	reverse_proxy http://dispatcharr:9191 {
-		health_uri /
-		health_interval 10s
-	}
+	reverse_proxy http://dispatcharr:9191
+}
+
+play.beans.is {
+	import logger jellyfin
+	import tls_cf
+	import base_config
+	reverse_proxy http://jellyfin:8096
+}
+
+request.play.beans.is {
+	import logger seerr
+	import tls_cf
+	import base_config
+	reverse_proxy http://seerr:5055
+}
+
+invites.play.beans.is {
+	import logger wizarr
+	import tls_cf
+	import base_config
+	reverse_proxy http://wizarr:5690
 }
