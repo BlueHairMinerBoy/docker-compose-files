@@ -1,10 +1,10 @@
 (logger) {
 	log {
-		output file /var/log/caddy/{args[0]}-access.log
+		output file /logs/{args[0]}-access.log
 		level INFO
 	}
 	log {
-		output file /var/log/caddy/{args[0]}-error.log
+		output file /logs/{args[0]}-error.log
 		level ERROR
 	}
 }
