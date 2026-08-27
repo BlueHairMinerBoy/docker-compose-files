@@ -21,6 +21,12 @@ services:
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
       - /dev/dri/card0:/dev/dri/card0
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8096/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   anubis:
     <<: *common
@@ -44,6 +50,11 @@ services:
     volumes:
       - /srv/docker/sabnzbd/config:/config
       - /mnt/drive/:/drive
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   sonarr:
     <<: *common
@@ -54,6 +65,11 @@ services:
     volumes:
       - /srv/docker/sonarr/config:/config
       - /mnt/drive/:/drive
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8989/ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   radarr:
     <<: *common
@@ -64,6 +80,11 @@ services:
     volumes:
       - /srv/docker/radarr/config:/config
       - /mnt/drive/:/drive
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:7878/ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   bazarr:
     <<: *common
@@ -74,6 +95,11 @@ services:
     volumes:
       - /srv/docker/bazarr/config:/config
       - /mnt/drive/:/drive
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6767/ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   wizarr:
     <<: *common
@@ -83,6 +109,12 @@ services:
       <<: *common-env
     volumes:
       - /srv/docker/wizarr/data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5690/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   seerr:
     <<: *common
@@ -92,7 +124,7 @@ services:
     environment:
       TZ: Europe/London
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1"]
       start_period: 20s
       timeout: 3s
       interval: 15s
@@ -108,6 +140,11 @@ services:
       <<: *common-env
     volumes:
       - /srv/docker/maintainerr/data:/opt/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6246/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   default:
